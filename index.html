@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beauty Bella Studio - Agendamento</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="hero-section">
+        <img src="img/profissional.jpg" alt="Profissional" class="hero-image">
+        <img src="img/logo.jpeg" alt="Beauty Bella Studio Logo" class="logo-image">
+        <h1>BEAUTY BELLA STUDIO</h1>
+        <p class="subtitle">Realçando sua beleza</p>
+    </div>
+
+    <div class="container">
+        
+        <!-- 1. Extensão de Cílios & Manutenções -->
+        <h2 class="section-title">Extensão de Cílios & Manutenções</h2>
+        <div class="services-grid" id="lista-cilios"></div>
+
+        <!-- 2. Sobrancelhas -->
+        <h2 class="section-title">Sobrancelhas</h2>
+        <div class="services-grid" id="lista-sobrancelhas"></div>
+
+        <!-- 3. Maquiagem -->
+        <h2 class="section-title">Maquiagem</h2>
+        <div class="services-grid" id="lista-maquiagem"></div>
+
+        <!-- 4. Métodos de pagamento & Endereço -->
+        <h2 class="section-title">Informações & Pagamento</h2>
+        <div class="service-item" style="display: block; text-align: center; background-color: var(--container-bg);">
+            <div class="service-info">
+                <h3 style="color: var(--gold); margin-bottom: 10px;">Formas de Pagamento</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">PIX CNPJ: 66426609000135<br>Dinheiro | Cartão de Crédito & Débito (sujeito a taxa)</p>
+                <h3 style="color: var(--gold); margin: 15px 0 5px 0;">Endereço</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Avenida do café N 542 (Studio Lilian Belato)</p>
+            </div>
+        </div>
+
+        <!-- Formulário de Agendamento -->
+        <div class="booking-form" id="agendar">
+            <h2 class="form-title">Agende seu Horário</h2>
+            <p class="form-subtitle">Escolha o serviço desejado e reserve seu atendimento.</p>
+            
+            <div class="steps-header">
+                <div class="step active" id="step1-indicator">1. Data & Hora</div>
+                <div class="step" id="step2-indicator">2. Seus Dados</div>
+            </div>
+
+            <form id="formAgendamento">
+                <!-- PASSO 1 -->
+                <div id="step1-content" class="step-content active">
+                    <label for="servicoSelecionado">Serviço Desejado</label>
+                    <select id="servicoSelecionado" required>
+                        <option value="" disabled selected>- Selecione um serviço -</option>
+                    </select>
+
+                    <label for="dataAgendamento">Escolha a Data</label>
+                    <input type="date" id="dataAgendamento" onchange="verificarDiaUtilCliente(this)">
+
+                    <label>Horários Disponíveis</label>
+                    <div class="time-slots" id="containerHorariosCliente">
+                        <!-- Os horários disponíveis aparecerão aqui automaticamente do banco -->
+                    </div>
+                    <input type="hidden" id="horarioAgendamento" required>
+
+                    <button type="button" class="btn-agendar" id="btnProximo">Próximo &rarr;</button>
+                </div>
+
+                <!-- PASSO 2 -->
+                <div id="step2-content" class="step-content" style="display: none;">
+                    <button type="button" class="btn-voltar" id="btnVoltar">&larr; Voltar</button>
+                    
+                    <label for="nomeCliente">Seu Nome Completo</label>
+                    <input type="text" id="nomeCliente" placeholder="Digite seu nome" required>
+
+                    <label for="telefoneCliente">Seu WhatsApp</label>
+                    <input type="tel" id="telefoneCliente" placeholder="(00) 00000-0000" required>
+
+                    <button type="submit" class="btn-agendar">Confirmar no WhatsApp</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Rodapé com Links de Contato, Endereço e Redes Sociais -->
+        <!-- Rodapé com Links de Contato, Endereço e Redes Sociais -->
+        <div class="footer-info">
+            <div class="footer-grid">
+                <div>
+                    <h4>MÉTODOS DE PAGAMENTO</h4>
+                    <p>PIX (CNPJ: 66.426.609/0001-35)<br>
+                        DINHEIRO<br>
+                        CARTÃO CRÉDITO & DÉBITO <small>(sujeito a acréscimo de taxa)</small></p>
+                </div>
+                <div>
+                    <h4>ENDEREÇO</h4>
+                    <p><a href="https://share.google/l9B3dtvtHZZBwBRLp" target="_blank" class="footer-link">Avenida do café N 542<br>(Studio Lilian Belato)</a></p>
+                </div>
+                <div>
+                    <h4>CONTATO & REDES SOCIAIS</h4>
+                    <p>WhatsApp: <a href="https://api.whatsapp.com/send?phone=5519994601542&" target="_blank" class="footer-link">(19) 99460‑1542</a><br>
+                    Instagram: <a href="https://www.instagram.com/beauty.bellaas?utm_source=ig_web_button_share_sheet&dlrf=ZDNlZDc0MzIxNw==" target="_blank" class="footer-link">@beauty.bellaas</a></p>
+                    <p><a href="login.html" class="footer-link">Área da administradora</a></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rodapé Inferior (Copyright e Link de Administrador) -->
+        <div style="margin-top: 20px; padding: 20px 0; border-top: 1px solid #333; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; font-size: 0.9rem; color: var(--text-muted, #aaa);">
+            <div>
+                © 2026 Beauty Bella Studio · Todos os direitos reservados
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
+</body>
+</html>

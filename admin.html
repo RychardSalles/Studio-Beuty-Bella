@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo - Beauty Bella Studio</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="admin-dashboard">
+
+    <!-- Top Bar -->
+    <header class="admin-top-bar">
+        <div class="admin-brand">
+            <img src="img/logo.jpeg" alt="Logo">
+            <div>
+                <h1>Painel Administrativo</h1>
+                <p>Beauty Bella Studio</p>
+            </div>
+        </div>
+        <div class="admin-nav-buttons">
+            <a href="index.html" class="btn-top" target="_blank">Ver Site</a>
+            <button id="btnSair" class="btn-top">Sair</button>
+        </div>
+    </header>
+
+    <div class="admin-container">
+
+        <!-- GERENCIAR HORÁRIOS POR DATA -->
+        <div class="card-form">
+            <h2>Gerenciar Horários por Data</h2>
+            <p style="color: #aaa; font-size: 0.9rem; margin-bottom: 15px;">Selecione o dia no calendário para gerenciar os horários daquela data específica (Segunda a Sexta).</p>
+            
+            <div style="margin-bottom: 15px; max-width: 250px;">
+                <label>Selecionar Data:</label>
+                <input type="date" id="dataSelecionadaAdmin">
+            </div>
+
+            <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" id="aplicarTodosDias" style="width: 18px; height: 18px; cursor: pointer;">
+                <label for="aplicarTodosDias" style="color: var(--gold); cursor: pointer; margin: 0; font-size: 0.9rem;">Aplicar alteração/adição para todos os dias úteis</label>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 20px; max-width: 350px;">
+                <input type="time" id="novoHorarioExtra" style="flex: 1;">
+                <button type="button" class="btn-salvar" onclick="adicionarHorarioExtra()" style="margin-top:0; padding: 10px 15px;">Adicionar</button>
+            </div>
+
+            <div id="gradeHorariosAdmin" class="horarios-container">
+                <!-- Preenchido via JavaScript -->
+            </div>
+        </div>
+
+        <!-- ADICIONAR NOVO PRODUTO / SERVIÇO -->
+        <div class="card-form">
+            <h2>Adicionar novo produto</h2>
+            <form id="formAddServico">
+                <div style="margin-bottom: 20px;">
+                    <label>Nome do produto</label>
+                    <input type="text" id="admNome" placeholder="Ex: Volume Natural" required>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label>Foto do produto (opcional)</label>
+                    <div class="file-upload-box">
+                        <input type="file" id="admFoto" accept="image/*">
+                    </div>
+                    <small style="color: #aaa; font-size: 0.8rem; display: block; margin-top: 5px;">Escolha uma foto da galeria ou tire uma na hora.</small>
+                </div>
+
+                <div class="form-row">
+                    <div>
+                        <label>Preço (R$)</label>
+                        <input type="number" step="0.01" id="admPreco" placeholder="17.99" required>
+                    </div>
+                    <div>
+                        <label>Valor da Manutenção (Opcional)</label>
+                        <input type="number" step="0.01" id="admPrecoManutencao" placeholder="Ex: 100.00">
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px; margin-bottom: 20px;">
+                    <label>Categoria</label>
+                    <select id="admCategoria">
+                        <option value="Extensão de Cílios & Manutenções">Extensão de Cílios & Manutenções</option>
+                        <option value="Sobrancelhas">Sobrancelhas</option>
+                        <option value="Maquiagem">Maquiagem</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn-salvar">Salvar produto</button>
+            </form>
+        </div>
+
+        <!-- PRODUTOS CADASTRADOS -->
+        <h2 class="section-title">Produtos Cadastrados</h2>
+        <div id="listaServicosAdmin" style="margin-top: 15px;">
+            <!-- Preenchido via JavaScript -->
+        </div>
+
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>

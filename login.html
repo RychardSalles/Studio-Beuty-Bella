@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Beauty Bella Studio</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body.login-body {
+            background-color: #0a0a0a;
+            color: #f5f5f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .login-card {
+            background: #141414;
+            padding: 40px;
+            border-radius: 12px;
+            border: 1px solid #d4af37;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .login-card img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 2px solid #d4af37;
+            object-fit: cover;
+            margin-bottom: 20px;
+        }
+        .login-card h2 {
+            color: #d4af37;
+            margin-bottom: 20px;
+            font-family: 'Times New Roman', serif;
+        }
+        .login-card input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            background: #000;
+            border: 1px solid #333;
+            color: #fff;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        .login-card input:focus {
+            outline: none;
+            border-color: #d4af37;
+        }
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            background: #d4af37;
+            color: #000;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: 0.3s;
+        }
+        .btn-login:hover {
+            background: #b5952f;
+        }
+        .error-msg {
+            color: #ff6b6b;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+            display: none;
+        }
+    </style>
+</head>
+<body class="login-body">
+
+    <div class="login-card">
+        <img src="img/logo.jpeg" alt="Logo">
+        <h2>Área Administrativa</h2>
+        
+        <div id="errorMsg" class="error-msg">E-mail ou senha incorretos.</div>
+
+        <form id="formLogin">
+            <input type="email" id="email" placeholder="E-mail" required>
+            <input type="password" id="password" placeholder="Senha" required>
+            <button type="submit" class="btn-login">Entrar</button>
+        </form>
+        
+        <p style="margin-top: 20px;"><a href="index.html" style="color: #aaa; font-size: 0.85rem; text-decoration: none;">&larr; Voltar para o site</a></p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const supabaseUrl = 'https://iauqpennhuzdzyayokgr.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhdXFwZW5uaHV6ZHp5YXlva2dyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTIxNzk4ODMsImV4cCI6MjEwNzc1NTg4M30.A_umW2BosxrIRTRgu_maZYq2w5aEhsxz2nGskf1hFjg';
+        
+        // CORRIGIDO: Removido o 'const' para não duplicar a declaração
+        supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        document.getElementById('formLogin').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('errorMsg');
+
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password,
+            });
+
+            if (error) {
+                errorDiv.style.display = 'block';
+                console.error(error);
+            } else {
+                window.location.href = 'admin.html';
+            }
+        });
+    </script>
+</body>
+</html>
