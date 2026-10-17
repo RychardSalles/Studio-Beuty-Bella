@@ -47,7 +47,14 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             if (fileInput && fileInput.files.length > 0) {
                 const file = fileInput.files[0];
-                const fileName = `${Date.now()}-${file.name}`;
+                
+                // Remove acentos e espaços do nome do arquivo para evitar erro 400 (Invalid key) no Storage
+                const nomeLimpo = file.name
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .replace(/\s+/g, '-');
+
+                const fileName = `${Date.now()}-${nomeLimpo}`;
 
                 const { error: uploadError } = await window.supabaseClient.storage
                     .from('produtos')
@@ -88,7 +95,7 @@ function verificarDiaUtilAdmin(input) {
     const diaDaSemana = dataEscolhida.getDay();
 
     if (diaDaSemana === 0 || diaDaSemana === 1) {
-        alert("O Beauty Bella Studio funciona apenas de terça a sábado.");
+        alert("O Beauty Bella Studio atende apenas de terça a sábado.");
         input.value = "";
         const container = document.getElementById('gradeHorariosAdmin');
         if (container) container.innerHTML = "";
@@ -105,41 +112,38 @@ async function carregarHorariosPorData() {
 
     const dataEscolhida = inputData.value;
     if (!dataEscolhida) return;
-    
+
+    // Busca apenas os horários salvos no banco para esta data específica
     let { data: horariosDB, error } = await window.supabaseClient
         .from('horarios_por_data')
         .select('*')
-        .eq('data', dataEscolhida);
+        .eq('data', dataEscolhida)
+        .order('horario', { ascending: true });
 
     if (error) {
         console.error("Erro ao buscar horários:", error);
         return;
     }
 
-    let listaHorarios = [...horariosPadrao];
-    if (horariosDB) {
-        horariosDB.forEach(h => {
-            if (!listaHorarios.includes(h.horario)) {
-                listaHorarios.push(h.horario);
-            }
-        });
-        listaHorarios.sort();
+    container.innerHTML = '';
+
+    if (!horariosDB || horariosDB.length === 0) {
+        container.innerHTML = '<span style="color: #aaa; font-size: 0.9rem;">Nenhum horário cadastrado para esta data. Use o campo acima para adicionar.</span>';
+        return;
     }
 
-    container.innerHTML = '';
-    listaHorarios.forEach(hora => {
-        let existente = horariosDB ? horariosDB.find(h => h.horario === hora) : null;
-        let ativo = existente ? existente.ativo : true;
+    horariosDB.forEach(h => {
+        let ativo = h.ativo;
 
         const slot = document.createElement('div');
         slot.className = `horario-slot-admin ${ativo ? 'disponivel' : 'indisponivel'}`;
         slot.style.position = 'relative';
         slot.innerHTML = `
-            <button type="button" onclick="deletarHorarioData('${dataEscolhida}', '${hora}')" style="position: absolute; top: 5px; right: 8px; background: transparent; border: none; color: #ff6b6b; cursor: pointer; font-size: 1.1rem; font-weight: bold;" title="Excluir horário">×</button>
-            <strong>${hora}</strong><br>
+            <button type="button" onclick="deletarHorarioData('${dataEscolhida}', '${h.horario}')" style="position: absolute; top: 5px; right: 8px; background: transparent; border: none; color: #ff6b6b; cursor: pointer; font-size: 1.1rem; font-weight: bold;" title="Excluir horário">×</button>
+            <strong>${h.horario}</strong><br>
             <span style="font-size: 0.8rem;">${ativo ? 'Disponível' : 'Indisponível'}</span>
             <label class="switch" style="display: block; margin: 8px auto 0 auto;">
-                <input type="checkbox" ${ativo ? 'checked' : ''} onchange="toggleHorarioData('${dataEscolhida}', '${hora}', this.checked)">
+                <input type="checkbox" ${ativo ? 'checked' : ''} onchange="toggleHorarioData('${dataEscolhida}', '${h.horario}', this.checked)">
                 <span class="slider"></span>
             </label>
         `;
@@ -204,7 +208,7 @@ window.adicionarHorarioExtra = async function() {
             }
             dataAtual.setDate(dataAtual.getDate() + 1);
         }
-        alert("Horário extra adicionado para todos os dias úteis!");
+        alert("Horário adicionado para todos os dias úteis!");
         inputHora.value = '';
         carregarHorariosPorData();
     } else {
@@ -329,7 +333,7 @@ window.editarServico = async function(id) {
 
     const form = document.getElementById('formAddServico');
     const novoForm = form.cloneNode(true);
-    form.parentNode.replaceChild(novoForm, form);
+    form.pathname = form.parentNode.replaceChild(novoForm, form);
 
     document.getElementById('admNome').value = data.nome;
     document.getElementById('admPreco').value = data.preco;
@@ -340,7 +344,6 @@ window.editarServico = async function(id) {
     const btnSalvar = document.querySelector('#formAddServico .btn-salvar') || document.querySelector('#formAddServico button[type="submit"]');
     if (btnSalvar) btnSalvar.textContent = "Atualizar produto";
 
-    // EDIÇÃO DE PRODUTO COM UPLOAD PARA O SUPABASE STORAGE
     document.getElementById('formAddServico').addEventListener('submit', async function(e) {
         e.preventDefault();
 
@@ -355,7 +358,13 @@ window.editarServico = async function(id) {
 
         if (fileInput && fileInput.files.length > 0) {
             const file = fileInput.files[0];
-            const fileName = `${Date.now()}-${file.name}`;
+            
+            const nomeLimpo = file.name
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/\s+/g, '-');
+
+            const fileName = `${Date.now()}-${nomeLimpo}`;
 
             const { error: uploadError } = await window.supabaseClient.storage
                 .from('produtos')
