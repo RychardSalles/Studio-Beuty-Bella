@@ -5,9 +5,20 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     const inputDataCliente = document.getElementById('dataAgendamento');
     if (inputDataCliente) {
-        const hoje = new Date().toISOString().split('T')[0];
-        inputDataCliente.value = hoje;
-        carregarHorariosDoDia(hoje);
+        let hojeDate = new Date();
+        let diaSemanaHoje = hojeDate.getDay();
+
+        // Se hoje for domingo (0) ou segunda (1), ajusta para a próxima terça-feira automaticamente
+        if (diaSemanaHoje === 0) {
+            hojeDate.setDate(hojeDate.getDate() + 2);
+        } else if (diaSemanaHoje === 1) {
+            hojeDate.setDate(hojeDate.getDate() + 1);
+        }
+
+        const dataInicialStr = hojeDate.toISOString().split('T')[0];
+        inputDataCliente.value = dataInicialStr;
+        inputDataCliente.min = dataInicialStr;
+        carregarHorariosDoDia(dataInicialStr);
 
         inputDataCliente.addEventListener('change', function() {
             verificarDiaUtilCliente(this);
@@ -79,15 +90,15 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 });
 
-// Valida se o dia escolhido é útil (Segunda a Sexta)
+// Valida se o dia escolhido é útil (Terça a Sábado - Bloqueia Domingo 0 e Segunda 1)
 function verificarDiaUtilCliente(input) {
     if (!input.value) return;
     
     const dataEscolhida = new Date(input.value + 'T00:00:00');
-    const diaDaSemana = dataEscolhida.getDay(); // 0 = Domingo, 6 = Sábado
+    const diaDaSemana = dataEscolhida.getDay(); // 0 = Domingo, 1 = Segunda
 
-    if (diaDaSemana === 0 || diaDaSemana === 6) {
-        alert("O Beauty Bella Studio atende apenas de segunda a sexta-feira. Por favor, selecione um dia útil.");
+    if (diaDaSemana === 0 || diaDaSemana === 1) {
+        alert("O Beauty Bella Studio atende apenas de terça a sábado. Por favor, selecione um dia útil.");
         input.value = ""; 
         const container = document.getElementById('containerHorariosCliente');
         if (container) container.innerHTML = "";

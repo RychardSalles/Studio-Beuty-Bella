@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     carregarServicosAdmin();
 
+    // CADASTRO DE NOVO PRODUTO COM UPLOAD PARA O SUPABASE STORAGE
     const form = document.getElementById('formAddServico');
     if (form) {
         form.addEventListener('submit', async function(e) {
@@ -43,8 +44,26 @@ document.addEventListener('DOMContentLoaded', async function() {
 
             const fileInput = document.getElementById('admFoto');
             let fotoUrl = 'img/logo.jpeg';
-            if (fileInput.files.length > 0) {
-                fotoUrl = 'img/' + fileInput.files[0].name;
+
+            if (fileInput && fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const fileName = `${Date.now()}-${file.name}`;
+
+                const { error: uploadError } = await window.supabaseClient.storage
+                    .from('produtos')
+                    .upload(fileName, file);
+
+                if (uploadError) {
+                    alert("Erro ao fazer upload da imagem.");
+                    console.error(uploadError);
+                    return;
+                }
+
+                const { data: publicUrlData } = window.supabaseClient.storage
+                    .from('produtos')
+                    .getPublicUrl(fileName);
+
+                fotoUrl = publicUrlData.publicUrl;
             }
 
             const { error } = await window.supabaseClient
@@ -68,8 +87,8 @@ function verificarDiaUtilAdmin(input) {
     const dataEscolhida = new Date(input.value + 'T00:00:00');
     const diaDaSemana = dataEscolhida.getDay();
 
-    if (diaDaSemana === 0 || diaDaSemana === 6) {
-        alert("O Beauty Bella Studio funciona apenas de segunda a sexta-feira.");
+    if (diaDaSemana === 0 || diaDaSemana === 1) {
+        alert("O Beauty Bella Studio funciona apenas de terça a sábado.");
         input.value = "";
         const container = document.getElementById('gradeHorariosAdmin');
         if (container) container.innerHTML = "";
@@ -141,7 +160,7 @@ window.toggleHorarioData = async function(data, horario, ativo) {
         let dataAtual = new Date();
         for (let i = 0; i < 60; i++) {
             let diaSemana = dataAtual.getDay();
-            if (diaSemana !== 0 && diaSemana !== 6) {
+            if (diaSemana !== 0 && diaSemana !== 1) {
                 let dataStr = dataAtual.toISOString().split('T')[0];
                 await window.supabaseClient
                     .from('horarios_por_data')
@@ -183,7 +202,7 @@ window.adicionarHorarioExtra = async function() {
         let dataAtual = new Date();
         for (let i = 0; i < 60; i++) {
             let diaSemana = dataAtual.getDay();
-            if (diaSemana !== 0 && diaSemana !== 6) {
+            if (diaSemana !== 0 && diaSemana !== 1) {
                 let dataStr = dataAtual.toISOString().split('T')[0];
                 await window.supabaseClient
                     .from('horarios_por_data')
@@ -213,13 +232,12 @@ window.deletarHorarioData = async function(data, horario) {
     const aplicarTodos = document.getElementById('aplicarTodosDias')?.checked;
 
     if (aplicarTodos) {
-        if (!confirm(`Deseja realmente remover o horário ${horario} de TODOS OS DIAS ÚTEIS?`)) return;
+        if (!confirm(`Deseja realmente remover o horário ${horario} de TODOS OS DIAS ÚTEIS (Terça a Sábado)?`)) return;
 
-        // Deleta o registro do horário em todos os dias úteis futuros cadastrados no banco
         let dataAtual = new Date();
         for (let i = 0; i < 60; i++) {
             let diaSemana = dataAtual.getDay();
-            if (diaSemana !== 0 && diaSemana !== 6) {
+            if (diaSemana !== 0 && diaSemana !== 1) {
                 let dataStr = dataAtual.toISOString().split('T')[0];
                 await window.supabaseClient
                     .from('horarios_por_data')
@@ -311,7 +329,8 @@ window.editarServico = async function(id) {
 
     document.getElementById('admNome').value = data.nome;
     document.getElementById('admPreco').value = data.preco;
-    document.getElementById('admPrecoManutencao').value = data.preco_manutencao || '';
+    const inputManutencao = document.getElementById('admPrecoManutencao');
+    if (inputManutencao) inputManutencao.value = data.preco_manutencao || '';
     document.getElementById('admCategoria').value = data.categoria;
 
     const form = document.getElementById('formAddServico');
@@ -320,12 +339,14 @@ window.editarServico = async function(id) {
 
     document.getElementById('admNome').value = data.nome;
     document.getElementById('admPreco').value = data.preco;
-    document.getElementById('admPrecoManutencao').value = data.preco_manutencao || '';
+    const inputManutencaoNovo = document.getElementById('admPrecoManutencao');
+    if (inputManutencaoNovo) inputManutencaoNovo.value = data.preco_manutencao || '';
     document.getElementById('admCategoria').value = data.categoria;
 
     const btnSalvar = document.querySelector('#formAddServico .btn-salvar') || document.querySelector('#formAddServico button[type="submit"]');
     if (btnSalvar) btnSalvar.textContent = "Atualizar produto";
 
+    // EDIÇÃO DE PRODUTO COM UPLOAD PARA O SUPABASE STORAGE
     document.getElementById('formAddServico').addEventListener('submit', async function(e) {
         e.preventDefault();
 
@@ -337,8 +358,26 @@ window.editarServico = async function(id) {
 
         const fileInput = document.getElementById('admFoto');
         let fotoUrl = data.foto;
-        if (fileInput.files.length > 0) {
-            fotoUrl = 'img/' + fileInput.files[0].name;
+
+        if (fileInput && fileInput.files.length > 0) {
+            const file = fileInput.files[0];
+            const fileName = `${Date.now()}-${file.name}`;
+
+            const { error: uploadError } = await window.supabaseClient.storage
+                .from('produtos')
+                .upload(fileName, file);
+
+            if (uploadError) {
+                alert("Erro ao fazer upload da nova imagem.");
+                console.error(uploadError);
+                return;
+            }
+
+            const { data: publicUrlData } = window.supabaseClient.storage
+                .from('produtos')
+                .getPublicUrl(fileName);
+
+            fotoUrl = publicUrlData.publicUrl;
         }
 
         const { error: updateError } = await window.supabaseClient
