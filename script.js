@@ -8,7 +8,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         let hojeDate = new Date();
         let diaSemanaHoje = hojeDate.getDay();
 
-        // Se hoje for domingo (0) ou segunda (1), ajusta para a próxima terça-feira automaticamente
         if (diaSemanaHoje === 0) {
             hojeDate.setDate(hojeDate.getDate() + 2);
         } else if (diaSemanaHoje === 1) {
@@ -27,7 +26,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     carregarServicosCliente();
 
-    // Controle dos Passos do Formulário (Próximo / Voltar)
     const btnProximo = document.getElementById('btnProximo');
     const btnVoltar = document.getElementById('btnVoltar');
     const step1Content = document.getElementById('step1-content');
@@ -64,7 +62,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    // Envio do Agendamento (Atualiza no banco para desativar o horário e redireciona para o WhatsApp)
+    // Envio do Agendamento (Bloqueia o horário no banco e abre o WhatsApp)
     const formAgendamento = document.getElementById('formAgendamento');
     if (formAgendamento) {
         formAgendamento.addEventListener('submit', async function(e) {
@@ -75,13 +73,14 @@ document.addEventListener('DOMContentLoaded', async function() {
             const nome = document.getElementById('nomeCliente').value;
             const telefone = document.getElementById('telefoneCliente').value;
 
-            // Atualiza o horário no Supabase como inativo (ativo: false) para que sumir para as próximas clientes
+            // Desativa o horário no banco (ativo: false)
             const { error } = await window.supabaseClient
                 .from('horarios_por_data')
                 .upsert({ data: dataISO, horario: horario, ativo: false }, { onConflict: 'data,horario' });
 
             if (error) {
-                console.error("Erro ao atualizar status do horário:", error);
+                console.error("Erro ao atualizar horário no banco:", error);
+                alert("Houve um erro ao reservar o horário no sistema, mas vamos abrir o WhatsApp para você concluir.");
             }
 
             let dataFormatada = dataISO;
@@ -92,23 +91,20 @@ document.addEventListener('DOMContentLoaded', async function() {
                 }
             }
 
-            const telefoneStudio = "5519994601542"; // Seu WhatsApp
+            const telefoneStudio = "5519994601542";
             const mensagem = `Olá! Gostaria de confirmar meu agendamento:%0A*Nome:* ${nome}%0A*Telefone:* ${telefone}%0A*Serviço:* ${servico}%0A*Data:* ${dataFormatada}%0A*Horário:* ${horario}`;
             
             window.open(`https://api.whatsapp.com/send?phone=${telefoneStudio}&text=${mensagem}`, '_blank');
-            
-            // Opcional: Recarrega a página ou os horários para atualizar a grade visualmente
             location.reload();
         });
     }
 });
 
-// Valida se o dia escolhido é útil (Terça a Sábado - Bloqueia Domingo 0 e Segunda 1)
 function verificarDiaUtilCliente(input) {
     if (!input.value) return;
     
     const dataEscolhida = new Date(input.value + 'T00:00:00');
-    const diaDaSemana = dataEscolhida.getDay(); // 0 = Domingo, 1 = Segunda
+    const diaDaSemana = dataEscolhida.getDay();
 
     if (diaDaSemana === 0 || diaDaSemana === 1) {
         alert("O Beauty Bella Studio atende apenas de terça a sábado. Por favor, selecione um dia útil.");
@@ -121,7 +117,6 @@ function verificarDiaUtilCliente(input) {
     carregarHorariosDoDia(input.value);
 }
 
-// Carrega os horários dinâmicos cadastrados no banco para o dia selecionado
 async function carregarHorariosDoDia(dataSelecionada) {
     const container = document.getElementById('containerHorariosCliente');
     const inputHorario = document.getElementById('horarioAgendamento');
@@ -149,7 +144,6 @@ async function carregarHorariosDoDia(dataSelecionada) {
         return;
     }
 
-    // Identifica data e hora atual para bloquear horários já passados no dia de hoje
     const agora = new Date();
     const dataHojeStr = agora.toISOString().split('T')[0];
     const horaAtual = agora.getHours();
@@ -160,7 +154,6 @@ async function carregarHorariosDoDia(dataSelecionada) {
     horariosDB.forEach(h => {
         let ativo = h.ativo;
 
-        // Se for o dia de hoje, verifica se o horário já passou
         if (dataSelecionada === dataHojeStr && ativo) {
             const [horaSlot, minutoSlot] = h.horario.split(':').map(Number);
             if (horaSlot < horaAtual || (horaSlot === horaAtual && minutoAtual > 0)) {
@@ -189,7 +182,6 @@ async function carregarHorariosDoDia(dataSelecionada) {
     }
 }
 
-// Carrega os serviços do Supabase para as categorias e para o select
 async function carregarServicosCliente() {
     const containerCilios = document.getElementById('lista-cilios');
     const containerSobrancelhas = document.getElementById('lista-sobrancelhas');
