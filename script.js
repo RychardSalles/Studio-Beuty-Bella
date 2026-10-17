@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    // Envio do Agendamento (Redirecionamento para WhatsApp) com Nome primeiro e Data formatada DD-MM-YYYY
+    // Envio do Agendamento (Redirecionamento para WhatsApp)
     const formAgendamento = document.getElementById('formAgendamento');
     if (formAgendamento) {
         formAgendamento.addEventListener('submit', function(e) {
@@ -73,6 +73,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             const dataISO = document.getElementById('dataAgendamento').value;
             const horario = document.getElementById('horarioAgendamento').value;
             const nome = document.getElementById('nomeCliente').value;
+            const telefone = document.getElementById('telefoneCliente').value;
 
             let dataFormatada = dataISO;
             if (dataISO) {
@@ -83,7 +84,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
 
             const telefoneStudio = "5519994601542"; // Seu WhatsApp
-            const mensagem = `Olá! Gostaria de confirmar meu agendamento:%0A*Nome:* ${nome}%0A*Serviço:* ${servico}%0A*Data:* ${dataFormatada}%0A*Horário:* ${horario}`;
+            const mensagem = `Olá! Gostaria de confirmar meu agendamento:%0A*Nome:* ${nome}%0A*Telefone:* ${telefone}%0A*Serviço:* ${servico}%0A*Data:* ${dataFormatada}%0A*Horário:* ${horario}`;
             
             window.open(`https://api.whatsapp.com/send?phone=${telefoneStudio}&text=${mensagem}`, '_blank');
         });
@@ -108,7 +109,7 @@ function verificarDiaUtilCliente(input) {
     carregarHorariosDoDia(input.value);
 }
 
-// Carrega horários dinâmicos bloqueando horários passados do dia atual
+// Carrega os horários dinâmicos cadastrados no banco para o dia selecionado
 async function carregarHorariosDoDia(dataSelecionada) {
     const container = document.getElementById('containerHorariosCliente');
     const inputHorario = document.getElementById('horarioAgendamento');
@@ -120,7 +121,8 @@ async function carregarHorariosDoDia(dataSelecionada) {
     let { data: horariosDB, error } = await window.supabaseClient
         .from('horarios_por_data')
         .select('*')
-        .eq('data', dataSelecionada);
+        .eq('data', dataSelecionada)
+        .order('horario', { ascending: true });
 
     if (error) {
         console.error("Erro ao buscar horários:", error);
@@ -128,14 +130,11 @@ async function carregarHorariosDoDia(dataSelecionada) {
         return;
     }
 
-    let listaHorarios = [...horariosPadrao];
-    if (horariosDB) {
-        horariosDB.forEach(h => {
-            if (!listaHorarios.includes(h.horario)) {
-                listaHorarios.push(h.horario);
-            }
-        });
-        listaHorarios.sort();
+    container.innerHTML = '';
+
+    if (!horariosDB || horariosDB.length === 0) {
+        container.innerHTML = '<span style="color: #aaa; font-size: 0.9rem;">Nenhum horário disponível para esta data.</span>';
+        return;
     }
 
     // Identifica data e hora atual para bloquear horários já passados no dia de hoje
@@ -144,18 +143,16 @@ async function carregarHorariosDoDia(dataSelecionada) {
     const horaAtual = agora.getHours();
     const minutoAtual = agora.getMinutes();
 
-    container.innerHTML = '';
     let horariosDisponiveisEncontrados = false;
 
-    listaHorarios.forEach(hora => {
-        let existente = horariosDB ? horariosDB.find(h => h.horario === hora) : null;
-        let ativo = existente ? existente.ativo : true;
+    horariosDB.forEach(h => {
+        let ativo = h.ativo;
 
         // Se for o dia de hoje, verifica se o horário já passou
         if (dataSelecionada === dataHojeStr && ativo) {
-            const [horaSlot, minutoSlot] = hora.split(':').map(Number);
+            const [horaSlot, minutoSlot] = h.horario.split(':').map(Number);
             if (horaSlot < horaAtual || (horaSlot === horaAtual && minutoAtual > 0)) {
-                ativo = false; // Oculta horários que já passaram hoje
+                ativo = false; 
             }
         }
 
@@ -163,12 +160,12 @@ async function carregarHorariosDoDia(dataSelecionada) {
             horariosDisponiveisEncontrados = true;
             const slot = document.createElement('div');
             slot.className = 'time-slot';
-            slot.innerText = hora;
+            slot.innerText = h.horario;
 
             slot.addEventListener('click', function() {
                 document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
                 this.classList.add('selected');
-                if (inputHorario) inputHorario.value = hora;
+                if (inputHorario) inputHorario.value = h.horario;
             });
 
             container.appendChild(slot);
