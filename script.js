@@ -64,16 +64,25 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     }
 
-    // Envio do Agendamento (Redirecionamento para WhatsApp)
+    // Envio do Agendamento (Atualiza no banco para desativar o horário e redireciona para o WhatsApp)
     const formAgendamento = document.getElementById('formAgendamento');
     if (formAgendamento) {
-        formAgendamento.addEventListener('submit', function(e) {
+        formAgendamento.addEventListener('submit', async function(e) {
             e.preventDefault();
             const servico = document.getElementById('servicoSelecionado').value;
             const dataISO = document.getElementById('dataAgendamento').value;
             const horario = document.getElementById('horarioAgendamento').value;
             const nome = document.getElementById('nomeCliente').value;
             const telefone = document.getElementById('telefoneCliente').value;
+
+            // Atualiza o horário no Supabase como inativo (ativo: false) para que sumir para as próximas clientes
+            const { error } = await window.supabaseClient
+                .from('horarios_por_data')
+                .upsert({ data: dataISO, horario: horario, ativo: false }, { onConflict: 'data,horario' });
+
+            if (error) {
+                console.error("Erro ao atualizar status do horário:", error);
+            }
 
             let dataFormatada = dataISO;
             if (dataISO) {
@@ -87,6 +96,9 @@ document.addEventListener('DOMContentLoaded', async function() {
             const mensagem = `Olá! Gostaria de confirmar meu agendamento:%0A*Nome:* ${nome}%0A*Telefone:* ${telefone}%0A*Serviço:* ${servico}%0A*Data:* ${dataFormatada}%0A*Horário:* ${horario}`;
             
             window.open(`https://api.whatsapp.com/send?phone=${telefoneStudio}&text=${mensagem}`, '_blank');
+            
+            // Opcional: Recarrega a página ou os horários para atualizar a grade visualmente
+            location.reload();
         });
     }
 });
