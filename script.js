@@ -117,12 +117,6 @@ async function carregarHorariosDoDia(dataSelecionada) {
     container.innerHTML = '<span style="color: #aaa; font-size: 0.9rem;">Carregando horários...</span>';
     if (inputHorario) inputHorario.value = '';
 
-    const horariosPadrao = [
-        "08:00", "09:00", "10:00", "11:00", 
-        "12:00", "13:00", "14:00", "15:00", 
-        "16:00", "17:00", "18:00", "19:00"
-    ];
-
     let { data: horariosDB, error } = await window.supabaseClient
         .from('horarios_por_data')
         .select('*')

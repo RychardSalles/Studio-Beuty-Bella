@@ -105,13 +105,7 @@ async function carregarHorariosPorData() {
 
     const dataEscolhida = inputData.value;
     if (!dataEscolhida) return;
-
-    const horariosPadrao = [
-        "08:00", "09:00", "10:00", "11:00", 
-        "12:00", "13:00", "14:00", "15:00", 
-        "16:00", "17:00", "18:00", "19:00"
-    ];
-
+    
     let { data: horariosDB, error } = await window.supabaseClient
         .from('horarios_por_data')
         .select('*')
